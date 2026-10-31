@@ -3,287 +3,12 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>TypeForge — Typing Tutor</title>
+<title>TypeForge — Local Typing Tutor</title>
+<link rel="stylesheet" href="css/styles.css" />
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-<style>
-  :root{
-    --bg:#080b10;
-    --panel:#0e141c;
-    --panel-2:#121a24;
-    --border:#1c2733;
-    --border-soft:#16202b;
-    --text:#dbe4f0;
-    --muted:#64748b;
-    --accent:#38bdf8;
-    --accent-2:#0ea5e9;
-    --good:#34d399;
-    --bad:#f87171;
-    --radius:14px;
-  }
-
-  *,*::before,*::after{ box-sizing:border-box; }
-
-  html,body{ height:100%; }
-
-  body{
-    margin:0;
-    min-height:100vh;
-    color:var(--text);
-    font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    background:
-      radial-gradient(1100px 520px at 12% -12%, rgba(56,189,248,.13), transparent 62%),
-      radial-gradient(900px 520px at 108% 4%, rgba(14,165,233,.09), transparent 58%),
-      var(--bg);
-    background-attachment: fixed;
-    -webkit-font-smoothing:antialiased;
-  }
-
-  ::selection{ background:rgba(56,189,248,.3); }
-
-  ::-webkit-scrollbar{ width:10px; height:10px; }
-  ::-webkit-scrollbar-track{ background:transparent; }
-  ::-webkit-scrollbar-thumb{ background:#1e2a38; border-radius:8px; border:2px solid var(--bg); }
-  ::-webkit-scrollbar-thumb:hover{ background:#2b3a4d; }
-
-  .app{ max-width:1360px; margin:0 auto; padding:26px 22px 64px; }
-
-  /* ---------- Top bar ---------- */
-  .topbar{
-    display:flex; align-items:center; justify-content:space-between;
-    gap:18px; flex-wrap:wrap; margin-bottom:20px;
-  }
-  .brand{ display:flex; align-items:center; gap:12px; }
-  .brand-mark{
-    width:46px; height:46px; border-radius:13px;
-    display:grid; place-items:center;
-    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-    font-weight:700; font-size:15px; color:#04121f;
-    background:linear-gradient(135deg,#7dd3fc,#0ea5e9);
-    box-shadow:0 0 28px rgba(56,189,248,.45);
-    letter-spacing:-1px;
-  }
-  .brand h1{ margin:0; font-size:19px; letter-spacing:.2px; }
-  .brand p{ margin:3px 0 0; font-size:12px; color:var(--muted); }
-
-  .controls{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
-
-  .segmented{
-    display:flex; gap:4px; padding:4px; border-radius:12px;
-    background:var(--panel); border:1px solid var(--border);
-  }
-  .mode-btn{
-    appearance:none; border:0; cursor:pointer; font:inherit;
-    font-size:13px; font-weight:600; color:var(--muted);
-    background:transparent; padding:8px 15px; border-radius:9px;
-    transition:all .18s ease; white-space:nowrap;
-  }
-  .mode-btn:hover{ color:#cbd5e1; }
-  .mode-btn.active{
-    color:#7dd3fc;
-    background:linear-gradient(135deg, rgba(56,189,248,.22), rgba(14,165,233,.12));
-    box-shadow: inset 0 0 0 1px rgba(56,189,248,.35);
-  }
-
-  .btn{
-    appearance:none; cursor:pointer; font:inherit; font-size:13px; font-weight:600;
-    padding:10px 16px; border-radius:10px;
-    border:1px solid var(--border); background:var(--panel); color:#cbd5e1;
-    transition:all .18s ease; white-space:nowrap;
-  }
-  .btn:hover{ border-color:#2b3a4d; color:#e2e8f0; transform:translateY(-1px); }
-  .btn:active{ transform:translateY(0); }
-  .btn.primary{
-    background:linear-gradient(135deg,#38bdf8,#0ea5e9);
-    color:#04121f; border-color:transparent;
-    box-shadow:0 8px 24px -8px rgba(56,189,248,.7);
-  }
-  .btn.primary:hover{ filter:brightness(1.08); color:#04121f; }
-
-  /* ---------- Stats ---------- */
-  .stats{
-    display:grid; grid-template-columns:repeat(4,minmax(0,1fr));
-    gap:14px; margin-bottom:16px;
-  }
-  @media (max-width:760px){ .stats{ grid-template-columns:repeat(2,minmax(0,1fr)); } }
-
-  .stat{
-    position:relative; overflow:hidden;
-    padding:14px 16px 16px; border-radius:var(--radius);
-    border:1px solid var(--border);
-    background:linear-gradient(180deg, rgba(18,26,36,.92), rgba(12,18,26,.92));
-  }
-  .stat::after{
-    content:""; position:absolute; left:0; right:0; top:0; height:2px;
-    background:linear-gradient(90deg, transparent, rgba(56,189,248,.75), transparent);
-    opacity:.55;
-  }
-  .stat-label{
-    font-size:11px; font-weight:700; letter-spacing:.14em;
-    text-transform:uppercase; color:var(--muted);
-  }
-  .stat-value{
-    margin-top:7px; font-size:30px; font-weight:700; line-height:1.1;
-    color:#eaf2fb; font-variant-numeric:tabular-nums;
-  }
-  .stat-value small{ font-size:14px; font-weight:600; color:var(--muted); margin-left:3px; }
-
-  .bar{
-    margin-top:10px; height:4px; border-radius:99px;
-    background:rgba(148,163,184,.14); overflow:hidden;
-  }
-  .bar-fill{
-    height:100%; width:100%; border-radius:99px;
-    background:linear-gradient(90deg,#0ea5e9,#38bdf8);
-    box-shadow:0 0 12px rgba(56,189,248,.7);
-    transition:width .12s linear;
-  }
-
-  /* ---------- Layout ---------- */
-  .layout{
-    display:grid; grid-template-columns:minmax(0,1.65fr) minmax(0,1fr);
-    gap:16px; align-items:start;
-  }
-  @media (max-width:1020px){ .layout{ grid-template-columns:minmax(0,1fr); } }
-
-  .panel{
-    border-radius:16px; border:1px solid var(--border); padding:18px;
-    background:linear-gradient(180deg, rgba(16,23,32,.96), rgba(10,15,22,.96));
-    box-shadow:0 24px 60px -42px rgba(0,0,0,1);
-  }
-  .panel + .panel{ margin-top:16px; }
-
-  .panel-head{
-    display:flex; align-items:center; justify-content:space-between;
-    gap:12px; margin-bottom:14px; flex-wrap:wrap;
-  }
-  .panel-title{
-    font-size:11px; font-weight:700; letter-spacing:.15em;
-    text-transform:uppercase; color:var(--muted);
-  }
-
-  /* ---------- Practice ---------- */
-  .practice-head{
-    display:flex; align-items:center; justify-content:space-between;
-    gap:12px; margin-bottom:12px; flex-wrap:wrap;
-  }
-  .badge{
-    font-size:11px; font-weight:700; letter-spacing:.1em; text-transform:uppercase;
-    color:#7dd3fc; background:rgba(56,189,248,.1);
-    border:1px solid rgba(56,189,248,.28);
-    padding:5px 11px; border-radius:999px; white-space:nowrap;
-  }
-  .hint{ font-size:12px; color:var(--muted); }
-
-  .text-display{
-    position:relative; overflow:hidden;
-    height:144px; padding:6px;
-    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
-    font-size:22px; line-height:44px; letter-spacing:.02em;
-    white-space:pre-wrap; word-break:normal; overflow-wrap:break-word;
-    border-radius:12px;
-    background:rgba(8,12,18,.7);
-    border:1px solid var(--border-soft);
-    cursor:text;
-    user-select:none;
-  }
-
-  .ch{ color:#46586e; transition:color .06s linear; }
-  .ch.correct{ color:#dbe7f5; }
-  .ch.incorrect{
-    color:#fca5a5;
-    background:rgba(248,113,113,.16);
-    border-radius:3px;
-    box-shadow: inset 0 -2px 0 rgba(248,113,113,.7);
-  }
-  .ch.active{
-    background:rgba(56,189,248,.16);
-    box-shadow: inset 2px 0 0 0 #38bdf8;
-    border-radius:3px;
-  }
-  .ch.active.incorrect{
-    background:rgba(248,113,113,.2);
-    box-shadow: inset 2px 0 0 0 #38bdf8;
-  }
-
-  /* ---------- Keyboard ---------- */
-  .keyboard{
-    margin-top:16px; display:flex; flex-direction:column; gap:6px;
-    overflow-x:auto; padding-bottom:4px;
-  }
-  .kb-row{ display:flex; gap:6px; justify-content:center; min-width:max-content; }
-
-  .key{
-    flex:0 0 auto; width:40px; height:40px;
-    display:flex; align-items:center; justify-content:center;
-    border-radius:8px; border:1px solid #212d3b;
-    background:#131b25; color:#74849a;
-    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-    font-size:12px; font-weight:600;
-    user-select:none; transition:all .06s ease;
-  }
-  .key.k15{ width:60px; }
-  .key.k175{ width:72px; }
-  .key.k2{ width:84px; }
-  .key.k225{ width:94px; }
-  .key.k125{ width:52px; }
-  .key.kspace{ width:230px; }
-
-  .key.active{
-    background:linear-gradient(180deg,#7dd3fc,#38bdf8);
-    color:#04121f; border-color:#bae6fd;
-    box-shadow:0 0 18px rgba(56,189,248,.75);
-    transform:translateY(1px) scale(.97);
-  }
-
-  /* ---------- Chart ---------- */
-  .chart-wrap{ position:relative; height:268px; }
-  .chart-empty{
-    position:absolute; inset:0; display:grid; place-items:center;
-    font-size:12px; color:#3d4b5e; pointer-events:none; text-align:center; padding:0 20px;
-  }
-
-  /* ---------- History ---------- */
-  .table-wrap{
-    max-height:330px; overflow:auto;
-    border:1px solid var(--border-soft); border-radius:12px;
-  }
-  table{ width:100%; border-collapse:collapse; font-size:13px; }
-  thead th{
-    position:sticky; top:0; z-index:2;
-    background:#0f1721; text-align:left;
-    padding:10px 12px; border-bottom:1px solid var(--border);
-    font-size:10.5px; font-weight:700; letter-spacing:.12em;
-    text-transform:uppercase; color:var(--muted); white-space:nowrap;
-  }
-  tbody td{
-    padding:10px 12px; border-bottom:1px solid var(--border-soft);
-    color:#b6c2d2; vertical-align:middle;
-  }
-  tbody tr:last-child td{ border-bottom:0; }
-  tbody tr:hover td{ background:rgba(56,189,248,.045); }
-  td.num{ font-variant-numeric:tabular-nums; white-space:nowrap; }
-  td.strong{ color:#eaf2fb; font-weight:700; }
-  td.ts{ white-space:nowrap; color:#8394a8; font-size:12px; }
-  td.txt{
-    max-width:360px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
-    color:#7c8ba1; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-    font-size:12px;
-  }
-  .tag{
-    display:inline-block; font-size:11px; font-weight:700; white-space:nowrap;
-    color:#7dd3fc; background:rgba(56,189,248,.09);
-    border:1px solid rgba(56,189,248,.22);
-    padding:3px 8px; border-radius:999px;
-  }
-  .empty-row td{ text-align:center; color:var(--muted); padding:28px 12px; }
-
-  .footer-note{
-    margin-top:18px; text-align:center;
-    font-size:11.5px; color:#3f4d60; letter-spacing:.03em;
-  }
-</style>
 </head>
 <body>
+
 <div class="app">
 
   <!-- ================= TOP BAR ================= -->
@@ -296,823 +21,220 @@
       </div>
     </div>
 
+    <nav class="nav" id="nav">
+      <button class="nav-btn active" data-view="practice" type="button">Practice</button>
+      <button class="nav-btn" data-view="analytics" type="button">Analytics</button>
+    </nav>
+
     <div class="controls">
-      <div class="segmented" role="tablist" aria-label="Practice mode">
-        <button class="mode-btn active" data-mode="short" role="tab" aria-selected="true">Short Words</button>
-        <button class="mode-btn" data-mode="academic" role="tab" aria-selected="false">Academic Words</button>
-        <button class="mode-btn" data-mode="code" role="tab" aria-selected="false">Code Mode</button>
+      <div class="profile-chip" id="profileChip" title="Current profile">
+        <span class="dot"></span><span id="profileName">&mdash;</span>
       </div>
-      <button class="btn" id="restartBtn" type="button">Restart</button>
+      <button class="btn" id="switchProfileBtn" type="button">Saves</button>
+      <button class="btn" id="saveJsonBtn" type="button">Save .json</button>
+      <button class="btn primary" id="exportCsvBtn" type="button">Export .csv</button>
     </div>
   </header>
 
-  <!-- ================= STATS ================= -->
-  <section class="stats" aria-label="Live statistics">
-    <div class="stat">
-      <div class="stat-label">Speed</div>
-      <div class="stat-value"><span id="wpm">0</span><small>wpm</small></div>
-    </div>
-    <div class="stat">
-      <div class="stat-label">Accuracy</div>
-      <div class="stat-value"><span id="acc">&mdash;</span></div>
-    </div>
-    <div class="stat">
-      <div class="stat-label">Time Left</div>
-      <div class="stat-value"><span id="time">60.0</span><small>s</small></div>
-      <div class="bar"><div class="bar-fill" id="timeBar"></div></div>
-    </div>
-    <div class="stat">
-      <div class="stat-label">Runs</div>
-      <div class="stat-value"><span id="runs">0</span></div>
-    </div>
-  </section>
+  <!-- ================= PRACTICE VIEW ================= -->
+  <main id="viewPractice" class="view">
 
-  <!-- ================= MAIN LAYOUT ================= -->
-  <div class="layout">
-
-    <!-- Practice zone -->
-    <section class="panel">
-      <div class="practice-head">
-        <span class="badge" id="modeBadge">Short Words</span>
-        <span class="hint" id="statusHint">Start typing to begin the 60-second test</span>
+    <div class="mode-bar">
+      <div class="segmented" role="tablist" aria-label="Practice mode">
+        <button class="mode-btn active" data-mode="short" role="tab" aria-selected="true" type="button">Short Words</button>
+        <button class="mode-btn" data-mode="academic" role="tab" aria-selected="false" type="button">Academic Words</button>
+        <button class="mode-btn" data-mode="code" role="tab" aria-selected="false" type="button">Code Mode</button>
+        <button class="mode-btn" data-mode="custom" role="tab" aria-selected="false" type="button">Custom Text</button>
       </div>
+      <button class="btn" id="restartBtn" type="button">Restart</button>
+    </div>
 
-      <div class="text-display" id="textDisplay" tabindex="0" aria-label="Typing target text"></div>
-
-      <div class="keyboard" id="keyboard" aria-hidden="true">
-        <div class="kb-row">
-          <div class="key" data-key="`">`</div>
-          <div class="key" data-key="1">1</div>
-          <div class="key" data-key="2">2</div>
-          <div class="key" data-key="3">3</div>
-          <div class="key" data-key="4">4</div>
-          <div class="key" data-key="5">5</div>
-          <div class="key" data-key="6">6</div>
-          <div class="key" data-key="7">7</div>
-          <div class="key" data-key="8">8</div>
-          <div class="key" data-key="9">9</div>
-          <div class="key" data-key="0">0</div>
-          <div class="key" data-key="-">&minus;</div>
-          <div class="key" data-key="=">=</div>
-          <div class="key k2" data-key="backspace">&#9003;</div>
-        </div>
-        <div class="kb-row">
-          <div class="key k15" data-key="tab">&#8677;</div>
-          <div class="key" data-key="q">q</div>
-          <div class="key" data-key="w">w</div>
-          <div class="key" data-key="e">e</div>
-          <div class="key" data-key="r">r</div>
-          <div class="key" data-key="t">t</div>
-          <div class="key" data-key="y">y</div>
-          <div class="key" data-key="u">u</div>
-          <div class="key" data-key="i">i</div>
-          <div class="key" data-key="o">o</div>
-          <div class="key" data-key="p">p</div>
-          <div class="key" data-key="[">[</div>
-          <div class="key" data-key="]">]</div>
-          <div class="key k15" data-key="\">\</div>
-        </div>
-        <div class="kb-row">
-          <div class="key k175" data-key="capslock">&#8679;</div>
-          <div class="key" data-key="a">a</div>
-          <div class="key" data-key="s">s</div>
-          <div class="key" data-key="d">d</div>
-          <div class="key" data-key="f">f</div>
-          <div class="key" data-key="g">g</div>
-          <div class="key" data-key="h">h</div>
-          <div class="key" data-key="j">j</div>
-          <div class="key" data-key="k">k</div>
-          <div class="key" data-key="l">l</div>
-          <div class="key" data-key=";">;</div>
-          <div class="key" data-key="'">'</div>
-          <div class="key k225" data-key="enter">&#9166;</div>
-        </div>
-        <div class="kb-row">
-          <div class="key k225" data-key="shift">&#8679;</div>
-          <div class="key" data-key="z">z</div>
-          <div class="key" data-key="x">x</div>
-          <div class="key" data-key="c">c</div>
-          <div class="key" data-key="v">v</div>
-          <div class="key" data-key="b">b</div>
-          <div class="key" data-key="n">n</div>
-          <div class="key" data-key="m">m</div>
-          <div class="key" data-key=",">,</div>
-          <div class="key" data-key=".">.</div>
-          <div class="key" data-key="/">/</div>
-          <div class="key k225" data-key="shift">&#8679;</div>
-        </div>
-        <div class="kb-row">
-          <div class="key k125" data-key="control">ctrl</div>
-          <div class="key k125" data-key="alt">alt</div>
-          <div class="key kspace" data-key="space">space</div>
-          <div class="key k125" data-key="alt">alt</div>
-          <div class="key k125" data-key="control">ctrl</div>
-        </div>
+    <section class="stats" aria-label="Live statistics">
+      <div class="stat">
+        <div class="stat-label">Speed</div>
+        <div class="stat-value"><span id="wpm">0</span><small>wpm</small></div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Accuracy</div>
+        <div class="stat-value"><span id="acc">&mdash;</span></div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Time Left</div>
+        <div class="stat-value"><span id="time">60.0</span><small>s</small></div>
+        <div class="bar"><div class="bar-fill" id="timeBar"></div></div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Runs</div>
+        <div class="stat-value"><span id="runs">0</span></div>
       </div>
     </section>
 
-    <!-- Chart panel -->
+    <div class="layout">
+      <section class="panel">
+        <div class="practice-head">
+          <span class="badge" id="modeBadge">Short Words</span>
+          <span class="hint" id="statusHint">Start typing to begin the 60-second test</span>
+        </div>
+
+        <div class="text-display" id="textDisplay" tabindex="0" aria-label="Typing target text"></div>
+
+        <div class="keyboard" id="keyboard" aria-hidden="true"></div>
+      </section>
+
+      <aside class="side-col">
+        <section class="panel">
+          <div class="panel-head">
+            <span class="panel-title">Live WPM</span>
+            <span class="hint" id="liveHint">starts when you type</span>
+          </div>
+          <div class="chart-wrap live-chart">
+            <canvas id="liveChart"></canvas>
+            <div class="chart-empty" id="liveEmpty">WPM will plot here as you type</div>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-head">
+            <span class="panel-title">Run Progression</span>
+            <span class="hint">WPM per completed run</span>
+          </div>
+          <div class="chart-wrap">
+            <canvas id="runChart"></canvas>
+            <div class="chart-empty" id="runEmpty">Finish a run to plot your trend</div>
+          </div>
+        </section>
+      </aside>
+    </div>
+
     <section class="panel">
       <div class="panel-head">
-        <span class="panel-title">WPM Progression</span>
-        <span class="hint">Per completed run</span>
+        <span class="panel-title">Session History</span>
+        <button class="btn" id="exportBtn" type="button">Export Session to CSV</button>
       </div>
-      <div class="chart-wrap">
-        <canvas id="wpmChart"></canvas>
-        <div class="chart-empty" id="chartEmpty">Complete a 60-second run to plot your first point</div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th><th>Timestamp</th><th>Mode</th><th>WPM</th><th>Accuracy</th><th>Text</th>
+            </tr>
+          </thead>
+          <tbody id="historyBody">
+            <tr class="empty-row"><td colspan="6">No runs yet &mdash; finish a 60-second test to log it here.</td></tr>
+          </tbody>
+        </table>
       </div>
     </section>
-  </div>
+  </main>
 
-  <!-- ================= HISTORY ================= -->
-  <section class="panel" style="margin-top:16px;">
-    <div class="panel-head">
-      <span class="panel-title">Session History</span>
-      <button class="btn primary" id="exportBtn" type="button">Export Session to CSV</button>
+  <!-- ================= ANALYTICS VIEW ================= -->
+  <main id="viewAnalytics" class="view hidden">
+
+    <div class="mode-bar">
+      <div class="segmented" id="analyticsTabs" role="tablist" aria-label="Analytics scope">
+        <button class="mode-btn active" data-scope="overall" role="tab" aria-selected="true" type="button">Overall</button>
+        <button class="mode-btn" data-scope="short" role="tab" aria-selected="false" type="button">Short Burst</button>
+        <button class="mode-btn" data-scope="academic" role="tab" aria-selected="false" type="button">Academic</button>
+        <button class="mode-btn" data-scope="code" role="tab" aria-selected="false" type="button">Code</button>
+      </div>
+      <span class="hint" id="analyticsHint">Your skill profile</span>
     </div>
 
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>#</th>
-            <th>Timestamp</th>
-            <th>Mode</th>
-            <th>WPM</th>
-            <th>Accuracy</th>
-            <th>Text</th>
-          </tr>
-        </thead>
-        <tbody id="historyBody">
-          <tr class="empty-row"><td colspan="6">No runs yet &mdash; finish a 60-second test to log it here.</td></tr>
-        </tbody>
-      </table>
-    </div>
-  </section>
+    <div class="analytics-grid">
+      <section class="panel">
+        <div class="panel-head"><span class="panel-title">Skill Radar</span></div>
+        <div class="chart-wrap radar-wrap">
+          <canvas id="radarChart"></canvas>
+          <div class="chart-empty" id="radarEmpty">Complete a run to unlock analytics</div>
+        </div>
+      </section>
 
-  <p class="footer-note">Everything runs locally in your browser. Nothing is uploaded.</p>
+      <section class="panel">
+        <div class="panel-head"><span class="panel-title">Letter Accuracy</span></div>
+        <div class="chart-wrap">
+          <canvas id="letterChart"></canvas>
+          <div class="chart-empty" id="letterEmpty">No letter data yet</div>
+        </div>
+      </section>
+    </div>
+
+    <div class="analytics-grid-2">
+      <section class="panel">
+        <div class="panel-head"><span class="panel-title">Strongest Words</span></div>
+        <ul class="stat-list" id="strongWords"><li class="empty-li">No data yet</li></ul>
+      </section>
+      <section class="panel">
+        <div class="panel-head"><span class="panel-title">Weakest Words</span></div>
+        <ul class="stat-list" id="weakWords"><li class="empty-li">No data yet</li></ul>
+      </section>
+    </div>
+
+    <div class="analytics-grid-2">
+      <section class="panel">
+        <div class="panel-head"><span class="panel-title">Strongest Letters</span></div>
+        <ul class="stat-list" id="strongLetters"><li class="empty-li">No data yet</li></ul>
+      </section>
+      <section class="panel">
+        <div class="panel-head"><span class="panel-title">Weakest Letters</span></div>
+        <ul class="stat-list" id="weakLetters"><li class="empty-li">No data yet</li></ul>
+      </section>
+    </div>
+  </main>
+
+  <p class="footer-note">Everything runs locally in your browser. Saves live in localStorage &mdash; export to .json or .csv to back up.</p>
 </div>
 
-<script>
-(function () {
-  'use strict';
-
-  /* =====================================================================
-     CONFIGURATION & WORD DATA
-     ===================================================================== */
-  const RUN_SECONDS = 60;
-  const TARGET_TEXT_LENGTH = 320;
-
-  const SHORT_WORDS = (
-    "the and for are but not you all any can had her was one our out day get has him his how man " +
-    "new now old see two way who boy did its let put say she too use that with have this will your " +
-    "from they know want been good much some time very when come here just like make many more only " +
-    "over such take than them well were what work down find give most tell back call came each even " +
-    "feel help into life live long look need next open part play right seem show side soon sure talk " +
-    "turn used wait week went word year also after again about other first great house small still " +
-    "night three water where which write world"
-  ).split(/\s+/).filter(Boolean);
-
-  const ACADEMIC_WORDS = (
-    "analysis approach concept context derived emphasis framework hypothesis implement indicate " +
-    "interpret methodology objective paradigm parameter perspective phenomenon principle procedure " +
-    "qualitative quantitative rationale research significant strategy structure subsequent synthesis " +
-    "theoretical validate variable abstract coherent correlate deduce empirical evaluate evidence " +
-    "function integrate logic matrix mechanism notion perceive postulate precise publish relevant " +
-    "resolve scope sequence survey theory thesis transition underlying verify cognition discourse " +
-    "dynamic element formulate inference intrinsic mediate offset prestige robust sector sustain"
-  ).split(/\s+/).filter(Boolean);
-
-  const CODE_SNIPPETS = [
-    'const x = 42;',
-    'let arr = [1, 2, 3];',
-    'if (a > b) {',
-    'return arr.map(fn);',
-    'function foo(a, b) {',
-    'class Node {',
-    'this.value = val;',
-    'obj[key] = value;',
-    'const { a, b } = obj;',
-    'export default App;',
-    'await fetch(url);',
-    'console.log(x);',
-    "import React from 'react';",
-    'arr.filter(x => x > 0);',
-    'while (i < 10) i++;',
-    'if (!flag) return null;',
-    'const sum = a + b;',
-    'new Promise((res) => {',
-    'let total = items.length;',
-    'for (let i = 0; i < n; i++) {',
-    "document.querySelector('#app');",
-    '<div class="card"></div>',
-    "case 'value': break;",
-    'const fn = (a) => a * 2;',
-    'try { run(); } catch (e) {'
-  ];
-
-  const MODE_LABELS = { short: 'Short Words', academic: 'Academic Words', code: 'Code Mode' };
-
-  /* =====================================================================
-     DOM REFERENCES
-     ===================================================================== */
-  const $ = function (id) { return document.getElementById(id); };
-
-  const dom = {
-    textDisplay: $('textDisplay'),
-    wpm: $('wpm'),
-    acc: $('acc'),
-    time: $('time'),
-    timeBar: $('timeBar'),
-    runs: $('runs'),
-    modeBadge: $('modeBadge'),
-    hint: $('statusHint'),
-    historyBody: $('historyBody'),
-    exportBtn: $('exportBtn'),
-    restartBtn: $('restartBtn'),
-    keyboard: $('keyboard'),
-    chartCanvas: $('wpmChart'),
-    chartEmpty: $('chartEmpty')
-  };
-
-  /* =====================================================================
-     STATE
-     ===================================================================== */
-  const state = {
-    mode: 'short',
-    text: '',
-    index: 0,
-    correctCount: 0,
-    keystrokes: 0,
-    correctKeystrokes: 0,
-    started: false,
-    running: false,
-    finished: false,
-    startTime: 0,
-    timeLeft: RUN_SECONDS,
-    timerId: null,
-    finalWpm: 0,
-    finalAcc: 0
-  };
-
-  let charEls = [];
-  let history = [];
-  let runNumber = 0;
-  let chart = null;
-
-  /* =====================================================================
-     TEXT GENERATION
-     ===================================================================== */
-  function shuffled(list) {
-    const a = list.slice();
-    for (let i = a.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      const tmp = a[i]; a[i] = a[j]; a[j] = tmp;
-    }
-    return a;
-  }
-
-  function generateText(mode) {
-    const out = [];
-    let len = 0;
-
-    if (mode === 'code') {
-      let pool = shuffled(CODE_SNIPPETS);
-      let i = 0;
-      while (len < TARGET_TEXT_LENGTH) {
-        if (i >= pool.length) { pool = shuffled(CODE_SNIPPETS); i = 0; }
-        const s = pool[i++];
-        out.push(s);
-        len += s.length + 1;
-      }
-      return out.join(' ');
-    }
-
-    const base = mode === 'academic' ? ACADEMIC_WORDS : SHORT_WORDS;
-    let pool = shuffled(base);
-    let i = 0;
-    while (len < TARGET_TEXT_LENGTH) {
-      if (i >= pool.length) { pool = shuffled(base); i = 0; }
-      const w = pool[i++];
-      out.push(w);
-      len += w.length + 1;
-    }
-    return out.join(' ');
-  }
-
-  /* =====================================================================
-     RENDERING — TARGET TEXT
-     ===================================================================== */
-  function renderText() {
-    dom.textDisplay.innerHTML = '';
-    charEls = [];
-
-    const frag = document.createDocumentFragment();
-    for (let i = 0; i < state.text.length; i++) {
-      const span = document.createElement('span');
-      span.className = 'ch';
-      span.textContent = state.text[i];
-      frag.appendChild(span);
-      charEls.push(span);
-    }
-    dom.textDisplay.appendChild(frag);
-
-    dom.textDisplay.scrollTop = 0;
-    if (charEls.length) charEls[0].classList.add('active');
-  }
-
-  function ensureVisible() {
-    if (!charEls.length) return;
-    const idx = Math.min(state.index, charEls.length - 1);
-    const node = charEls[idx];
-    if (!node) return;
-
-    const lineHeight = node.offsetHeight || 44;
-    const viewH = dom.textDisplay.clientHeight;
-    const top = node.offsetTop;
-    const target = Math.max(0, top - (viewH / 2) + (lineHeight / 2));
-
-    if (Math.abs(dom.textDisplay.scrollTop - target) > lineHeight / 2) {
-      dom.textDisplay.scrollTop = target;
-    }
-  }
-
-  /* =====================================================================
-     STATS RENDERING
-     ===================================================================== */
-  function renderStats() {
-    if (state.finished) {
-      dom.wpm.textContent = String(Math.round(state.finalWpm));
-      dom.acc.textContent = Math.round(state.finalAcc) + '%';
-      return;
-    }
-
-    let wpm = 0;
-    if (state.started) {
-      const elapsed = (performance.now() - state.startTime) / 1000;
-      const minutes = Math.max(elapsed, 1) / 60;
-      wpm = (state.correctCount / 5) / minutes;
-    }
-    dom.wpm.textContent = String(Math.round(wpm));
-
-    if (state.keystrokes === 0) {
-      dom.acc.textContent = '\u2014';
-    } else {
-      const acc = (state.correctKeystrokes / state.keystrokes) * 100;
-      dom.acc.textContent = Math.round(acc) + '%';
-    }
-  }
-
-  function renderTimer() {
-    dom.time.textContent = state.timeLeft.toFixed(1);
-    const pct = Math.max(0, Math.min(1, state.timeLeft / RUN_SECONDS)) * 100;
-    dom.timeBar.style.width = pct + '%';
-  }
-
-  function setHint(msg) {
-    dom.hint.textContent = msg;
-  }
-
-  /* =====================================================================
-     TIMER
-     ===================================================================== */
-  function startTimer() {
-    stopTimer();
-    state.timerId = setInterval(function () {
-      const elapsed = (performance.now() - state.startTime) / 1000;
-      state.timeLeft = Math.max(0, RUN_SECONDS - elapsed);
-      renderTimer();
-      renderStats();
-      if (state.timeLeft <= 0) finishRun();
-    }, 100);
-  }
-
-  function stopTimer() {
-    if (state.timerId !== null) {
-      clearInterval(state.timerId);
-      state.timerId = null;
-    }
-  }
-
-  /* =====================================================================
-     RUN LIFECYCLE
-     ===================================================================== */
-  function resetRun(newText) {
-    stopTimer();
-
-    if (newText) state.text = generateText(state.mode);
-
-    state.index = 0;
-    state.correctCount = 0;
-    state.keystrokes = 0;
-    state.correctKeystrokes = 0;
-    state.started = false;
-    state.running = false;
-    state.finished = false;
-    state.startTime = 0;
-    state.timeLeft = RUN_SECONDS;
-    state.finalWpm = 0;
-    state.finalAcc = 0;
-
-    dom.modeBadge.textContent = MODE_LABELS[state.mode];
-    renderText();
-    renderTimer();
-    renderStats();
-    setHint('Start typing to begin the 60-second test');
-  }
-
-  function beginRun() {
-    state.started = true;
-    state.running = true;
-    state.startTime = performance.now();
-    setHint('Running \u2014 keep your eyes on the screen');
-    startTimer();
-  }
-
-  function finishRun() {
-    if (!state.running) return;
-
-    stopTimer();
-    state.running = false;
-    state.finished = true;
-    state.timeLeft = 0;
-
-    const minutes = RUN_SECONDS / 60;
-    state.finalWpm = (state.correctCount / 5) / minutes;
-    state.finalAcc = state.keystrokes > 0
-      ? (state.correctKeystrokes / state.keystrokes) * 100
-      : 0;
-
-    renderTimer();
-    renderStats();
-    recordRun(state.finalWpm, state.finalAcc);
-    setHint('Run complete \u2014 press any key to start the next 60s run');
-  }
-
-  /* =====================================================================
-     INPUT HANDLING
-     ===================================================================== */
-  function doType(ch) {
-    if (state.finished) resetRun(true);
-    if (!state.started) beginRun();
-    if (state.index >= state.text.length) return;
-
-    const expected = state.text[state.index];
-    const node = charEls[state.index];
-    const isCorrect = ch === expected;
-
-    if (isCorrect) {
-      state.correctCount++;
-      state.correctKeystrokes++;
-    }
-    state.keystrokes++;
-
-    node.classList.remove('active');
-    node.classList.add(isCorrect ? 'correct' : 'incorrect');
-
-    state.index++;
-
-    if (state.index < charEls.length) {
-      charEls[state.index].classList.add('active');
-    }
-
-    ensureVisible();
-    renderStats();
-  }
-
-  function doBackspace() {
-    if (state.finished) return;
-    if (state.index === 0) return;
-
-    state.index--;
-
-    const node = charEls[state.index];
-    if (node.classList.contains('correct')) state.correctCount--;
-    node.classList.remove('correct', 'incorrect', 'active');
-
-    if (charEls[state.index + 1]) {
-      charEls[state.index + 1].classList.remove('active');
-    }
-    node.classList.add('active');
-
-    ensureVisible();
-    renderStats();
-  }
-
-  /* =====================================================================
-     VIRTUAL KEYBOARD HIGHLIGHTING
-     ===================================================================== */
-  const keyEls = new Map();
-  dom.keyboard.querySelectorAll('.key').forEach(function (k) {
-    const id = k.dataset.key;
-    if (!keyEls.has(id)) keyEls.set(id, []);
-    keyEls.get(id).push(k);
-  });
-
-  const CODE_TO_KEY = {
-    Minus: '-', Equal: '=', BracketLeft: '[', BracketRight: ']', Backslash: '\\',
-    Semicolon: ';', Quote: "'", Comma: ',', Period: '.', Slash: '/', Backquote: '`',
-    Space: 'space', Enter: 'enter', Backspace: 'backspace', Tab: 'tab',
-    ShiftLeft: 'shift', ShiftRight: 'shift',
-    ControlLeft: 'control', ControlRight: 'control',
-    AltLeft: 'alt', AltRight: 'alt',
-    MetaLeft: 'meta', MetaRight: 'meta',
-    CapsLock: 'capslock'
-  };
-
-  function codeToKeyId(code) {
-    if (!code) return null;
-    if (/^Key[A-Z]$/.test(code)) return code.slice(3).toLowerCase();
-    if (/^Digit[0-9]$/.test(code)) return code.slice(5);
-    return CODE_TO_KEY[code] || null;
-  }
-
-  function highlightKey(code) {
-    const id = codeToKeyId(code);
-    if (!id) return;
-    const els = keyEls.get(id);
-    if (!els) return;
-    for (let i = 0; i < els.length; i++) {
-      const el = els[i];
-      el.classList.add('active');
-      if (el._t) clearTimeout(el._t);
-      el._t = setTimeout(function () { el.classList.remove('active'); }, 130);
-    }
-  }
-
-  /* =====================================================================
-     GLOBAL KEY LISTENER
-     ===================================================================== */
-  document.addEventListener('keydown', function (e) {
-    highlightKey(e.code);
-
-    // Ignore browser/OS shortcut combos entirely.
-    if (e.ctrlKey || e.metaKey || e.altKey) return;
-
-    if (e.key === 'Backspace') {
-      e.preventDefault();
-      doBackspace();
-      return;
-    }
-
-    if (e.key === 'Enter' || e.key === 'Tab' || e.key === 'Escape') {
-      e.preventDefault();
-      return;
-    }
-
-    if (e.key.length !== 1) return; // Shift, arrows, F-keys, etc.
-
-    e.preventDefault();
-    doType(e.key);
-  });
-
-  /* =====================================================================
-     HISTORY TABLE
-     ===================================================================== */
-  function makeCell(text, cls) {
-    const td = document.createElement('td');
-    if (cls) td.className = cls;
-    td.textContent = String(text);
-    return td;
-  }
-
-  function renderHistory() {
-    dom.historyBody.innerHTML = '';
-
-    if (!history.length) {
-      const tr = document.createElement('tr');
-      tr.className = 'empty-row';
-      const td = document.createElement('td');
-      td.colSpan = 6;
-      td.textContent = 'No runs yet \u2014 finish a 60-second test to log it here.';
-      tr.appendChild(td);
-      dom.historyBody.appendChild(tr);
-      return;
-    }
-
-    const frag = document.createDocumentFragment();
-    for (let i = history.length - 1; i >= 0; i--) {
-      const h = history[i];
-      const tr = document.createElement('tr');
-
-      tr.appendChild(makeCell(h.n, 'num'));
-      tr.appendChild(makeCell(h.timestamp, 'ts'));
-
-      const tdMode = document.createElement('td');
-      const tag = document.createElement('span');
-      tag.className = 'tag';
-      tag.textContent = h.modeLabel;
-      tdMode.appendChild(tag);
-      tr.appendChild(tdMode);
-
-      tr.appendChild(makeCell(h.wpm, 'num strong'));
-      tr.appendChild(makeCell(h.accuracy + '%', 'num'));
-
-      const tdText = makeCell(h.text, 'txt');
-      tdText.title = h.text;
-      tr.appendChild(tdText);
-
-      frag.appendChild(tr);
-    }
-    dom.historyBody.appendChild(frag);
-  }
-
-  /* =====================================================================
-     TIMESTAMP HELPERS
-     ===================================================================== */
-  function pad2(n) { return String(n).padStart(2, '0'); }
-
-  function formatTimestamp(d) {
-    return d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate()) +
-      ' ' + pad2(d.getHours()) + ':' + pad2(d.getMinutes()) + ':' + pad2(d.getSeconds());
-  }
-
-  function fileStamp(d) {
-    return d.getFullYear() + pad2(d.getMonth() + 1) + pad2(d.getDate()) + '-' +
-      pad2(d.getHours()) + pad2(d.getMinutes()) + pad2(d.getSeconds());
-  }
-
-  /* =====================================================================
-     RUN RECORDING + CHART
-     ===================================================================== */
-  function recordRun(wpm, acc) {
-    runNumber++;
-
-    const entry = {
-      n: runNumber,
-      timestamp: formatTimestamp(new Date()),
-      mode: state.mode,
-      modeLabel: MODE_LABELS[state.mode],
-      wpm: Math.round(wpm * 10) / 10,
-      accuracy: Math.round(acc * 10) / 10,
-      text: state.text
-    };
-
-    history.push(entry);
-    dom.runs.textContent = String(runNumber);
-
-    renderHistory();
-    updateChart();
-  }
-
-  function updateChart() {
-    if (!chart) return;
-    if (dom.chartEmpty) {
-      dom.chartEmpty.style.display = history.length ? 'none' : 'grid';
-    }
-    chart.data.labels = history.map(function (h) { return 'Run ' + h.n; });
-    chart.data.datasets[0].data = history.map(function (h) { return h.wpm; });
-    chart.update();
-  }
-
-  function initChart() {
-    if (typeof Chart === 'undefined') {
-      if (dom.chartEmpty) dom.chartEmpty.textContent = 'Chart.js could not be loaded (offline?)';
-      return;
-    }
-
-    const ctx = dom.chartCanvas.getContext('2d');
-    chart = new Chart(ctx, {
-      type: 'line',
-      data: {
-        labels: [],
-        datasets: [{
-          label: 'WPM',
-          data: [],
-          borderColor: '#38bdf8',
-          backgroundColor: 'rgba(56,189,248,0.14)',
-          borderWidth: 2,
-          pointBackgroundColor: '#0ea5e9',
-          pointBorderColor: '#7dd3fc',
-          pointBorderWidth: 2,
-          pointRadius: 4,
-          pointHoverRadius: 7,
-          tension: 0.35,
-          fill: true
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        animation: { duration: 450 },
-        interaction: { intersect: false, mode: 'index' },
-        plugins: {
-          legend: { display: false },
-          tooltip: {
-            backgroundColor: '#0d151f',
-            borderColor: '#1e2a38',
-            borderWidth: 1,
-            titleColor: '#7dd3fc',
-            bodyColor: '#dbe4f0',
-            padding: 10,
-            displayColors: false,
-            callbacks: {
-              label: function (item) { return item.parsed.y + ' WPM'; }
-            }
-          }
-        },
-        scales: {
-          x: {
-            grid: { color: 'rgba(148,163,184,0.07)', drawTicks: false },
-            border: { display: false },
-            ticks: { color: '#55647a', font: { size: 11 }, maxRotation: 0, autoSkipPadding: 12 }
-          },
-          y: {
-            beginAtZero: true,
-            grid: { color: 'rgba(148,163,184,0.07)', drawTicks: false },
-            border: { display: false },
-            ticks: { color: '#55647a', font: { size: 11 }, padding: 8 }
-          }
-        }
-      }
-    });
-  }
-
-  /* =====================================================================
-     CSV EXPORT
-     ===================================================================== */
-  function csvEscape(value) {
-    return '"' + String(value).replace(/"/g, '""') + '"';
-  }
-
-  function exportCSV() {
-    if (!history.length) {
-      setHint('Nothing to export yet \u2014 finish a run first');
-      return;
-    }
-
-    const rows = [];
-    rows.push(['Timestamp', 'PracticeMode', 'Speed_WPM', 'Accuracy', 'typed_words']
-      .map(csvEscape).join(','));
-
-    for (let i = 0; i < history.length; i++) {
-      const h = history[i];
-      rows.push([
-        h.timestamp,
-        h.modeLabel,
-        h.wpm,
-        h.accuracy,
-        h.text
-      ].map(csvEscape).join(','));
-    }
-
-    const csv = '\uFEFF' + rows.join('\r\n');
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'typing-session-' + fileStamp(new Date()) + '.csv';
-    a.style.display = 'none';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-
-    setTimeout(function () { URL.revokeObjectURL(url); }, 1500);
-    setHint('Exported ' + history.length + ' run(s) to CSV');
-  }
-
-  /* =====================================================================
-     CONTROLS
-     ===================================================================== */
-  document.querySelectorAll('.mode-btn').forEach(function (btn) {
-    btn.addEventListener('click', function () {
-      const mode = btn.dataset.mode;
-      if (mode === state.mode) { btn.blur(); return; }
-
-      state.mode = mode;
-      document.querySelectorAll('.mode-btn').forEach(function (b) {
-        const active = b === btn;
-        b.classList.toggle('active', active);
-        b.setAttribute('aria-selected', active ? 'true' : 'false');
-      });
-
-      btn.blur();
-      resetRun(true);
-    });
-  });
-
-  dom.restartBtn.addEventListener('click', function () {
-    dom.restartBtn.blur();
-    resetRun(true);
-  });
-
-  dom.exportBtn.addEventListener('click', function () {
-    dom.exportBtn.blur();
-    exportCSV();
-  });
-
-  dom.textDisplay.addEventListener('mousedown', function (e) {
-    e.preventDefault();
-  });
-
-  /* =====================================================================
-     BOOT
-     ===================================================================== */
-  initChart();
-  renderHistory();
-  resetRun(true);
-})();
-</script>
+<!-- ================= PROFILE MODAL ================= -->
+<div class="modal-backdrop" id="profileModal">
+  <div class="modal">
+    <h2>Welcome to TypeForge</h2>
+    <p class="modal-sub">
+      Enter your name to resume a save. Saves are auto-stored in this browser as JSON.
+      You can also load <code>.json</code> or <code>.csv</code> files from your folder below.
+    </p>
+
+    <label class="field-label" for="profileNameInput">Your name</label>
+    <input id="profileNameInput" class="input" type="text" placeholder="e.g. Alex" autocomplete="off" spellcheck="false" />
+
+    <div class="field-row">
+      <button class="btn" id="loadFilesBtn" type="button">Load save files&hellip;</button>
+      <button class="btn" id="scanFolderBtn" type="button">Scan folder&hellip;</button>
+    </div>
+    <input id="fileInput" type="file" accept=".csv,.json" multiple hidden />
+
+    <div class="divider"></div>
+
+    <label class="field-label" for="profileSelect">Existing saves</label>
+    <select id="profileSelect" class="input"></select>
+
+    <div class="modal-actions">
+      <button class="btn primary" id="continueBtn" type="button">Start session</button>
+    </div>
+
+    <p class="modal-note" id="profileNote"></p>
+  </div>
+</div>
+
+<!-- ================= CUSTOM TEXT MODAL ================= -->
+<div class="modal-backdrop" id="customModal">
+  <div class="modal">
+    <h2>Custom practice text</h2>
+    <p class="modal-sub">Paste any paragraph. Whitespace is normalized to single spaces.</p>
+    <textarea id="customTextarea" class="input textarea" rows="8" placeholder="Paste your text here&hellip;" spellcheck="false"></textarea>
+    <div class="modal-actions">
+      <button class="btn" id="customCancel" type="button">Cancel</button>
+      <button class="btn primary" id="customUse" type="button">Use this text</button>
+    </div>
+  </div>
+</div>
+
+<!-- ================= SCRIPTS ================= -->
+<script src="js/words.js"></script>
+<script src="js/storage.js"></script>
+<script src="js/stats.js"></script>
+<script src="js/keyboard.js"></script>
+<script src="js/charts.js"></script>
+<script src="js/typing.js"></script>
+<script src="js/analytics.js"></script>
+<script src="js/app.js"></script>
 </body>
 </html>
